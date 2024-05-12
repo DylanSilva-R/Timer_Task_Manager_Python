@@ -1,0 +1,19 @@
+- First, I am going to create a hacky solution, then I am going to jump into the GUI program.
+
+Hacky solution
+--------------
+- Formatting time input will be split by ":"
+- Counting down process:
+	- Find hours, minutes, seconds, using total time that was converted to seconds. 
+            - Hours can be founded by using int(totalTimeSec / 3600) because there are 3600 seconds in an hour.
+        	- Minutes can be founded by using int(totalTimeSec / 60) % 60. There are 60 seconds in a minute and the remainder of is total minutes
+        	- Seconds is founded by dividing total time by 60.
+        - Create a loop to control program sleep. Sleeping in this case means that the program will not run for one second.
+        -
+- Might allow mp3 audio input that the user wants to use: https://stackoverflow.com/questions/20021457/playing-mp3-song-on-python
+- User can set another time after they are done.
+- Might implement task managing. Simply a TODO list.
+
+GUI solution
+------------
+

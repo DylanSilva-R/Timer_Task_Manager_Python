@@ -1,18 +1,21 @@
 import sys
-import Tasks as TasksObj
-import Timer as timerObj
+import Tasks
+import Timer
 import threading
 
 """
 This is the main file of the timer/task manager program.
 This file will handle user input.
 """
+taskObj = Tasks.TasksObj()
+timerObj = Timer.timerObj()
 
 
 def main():
     print("------------------------")
-    print("|Timer and task manager|")
+    print("|Timer and Task manager|")
     print("------------------------")
+
 
     while True:
         try:
@@ -56,40 +59,39 @@ def Main_menu():
 
 # Tasks task_Manager_Menu_Input handles user input for tasks management.
 def task_Manager_Menu_Input():
-    
-    while True:
-        try:
-            task_Manager_Menu()
+    while True:  
+        task_Manager_Menu()
 
-            taskManagerInput = int(input("Your choice: "))
+        taskManagerInput = int(input("Your choice: "))
 
-            match taskManagerInput:
-                case 1:
-                    taskDetails = input("Input your task: ")
-                    TasksObj.TasksObj().addToList(taskDetails)
+        match taskManagerInput:
+            case 1:
+                taskDetails = input("Input your task: ")
+                taskObj.addToList(taskDetails)
 
-                case 2:
-                    if TasksObj.TasksObj().getTaskCount() == 0:
+            case 2:
+                try:
+                    if taskObj.getTaskCount() == 0:
                         print("There are no tasks to remove.")
                     else:
                         index = int(input("Input index of a task to remove: "))
-                        TasksObj.TasksObj().removeList(index)
+                        taskObj.removeList(index)
 
-                case 3:
-                    TasksObj.TasksObj().printList()
+                except ValueError:
+                    print("")
+                    print("You need to input an integer value")
+                    print("")
+                
+            case 3:
+                taskObj.printList()
 
-                case 4:
-                    break
-                case _:
-                    print("Your input is out of bounds. Please try again.")
+            case 4:
+                main()
 
-        except ValueError:
-            print("")
-            print("You input the wrong data type. You are supposed to input an integer.")
-            print("")
+            case _:
+                print("Your input is out of bounds. Please try again.")
 
 def timer_Menu_Input():
-
     while True:
         try:
             timer_Menu()
@@ -98,9 +100,9 @@ def timer_Menu_Input():
 
             match timerMenuIn:
                 case 1:
-                    timerObj.timerObj().checkIfFormatCorrect()
+                    timerObj.checkIfFormatCorrect()
                 case 2:
-                    if timerObj.timerObj().getTime():
+                    if timerObj.getTime():
                         print("You haven't set a time limit yet. Please do that first.")
                     else:
                         # Thread call is necessary so the timer can run in the background.

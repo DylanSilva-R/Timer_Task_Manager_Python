@@ -11,48 +11,33 @@ CPU bound = Program/task spends most of its time waitting for internal events to
 IO bound = Program/task spends most of its time waiting for external evens use multithreading.
 """
 
-hours = 0
-minutes = 0
-seconds = 0
-
 def main():
-
-    checkIfFormatCorrect()
-    randomStuff()
-
-
-    return
-def randomStuff():
-
     while True:
-        userIn = input("Input random stuff until the timer stops (Press 3 to escape)")
+        try:
 
-        if userIn == "3":
-            break
+            taskManagerInput = int(input("Your choice: "))
 
+            match taskManagerInput:
+                case 1:
+                    taskDetails = input("Input your task: ")
 
-def checkIfFormatCorrect():
-    amountOfTime = input("How much time are you trying to keep track of (Format: HH:MM:SS)? ")
-    hours, minutes, seconds = map(int, amountOfTime.split(":"))
+                case 2:
+                    try:
+                        
+                        index = int(input("Input index of a task to remove: "))
 
-    timerThread = threading.Thread(target = startTimer, args = (hours, minutes, seconds,))
-    timerThread.start()
+                    except ValueError:
+                        print("")
+                        print("You need to input an integer value")
+                        print("")
+                    
+                case _:
+                    print("Your input is out of bounds. Please try again.")
 
-def startTimer(hours, minutes, seconds):
-    # Threading will necessary for this method.
-
-    totalSec = hours * 3600 + minutes * 60 + seconds
-
-    for countTime in range(totalSec, 0, -1):
-        
-        newHour = int(countTime / 3600)
-        newMinutes = int(countTime / 60) % 60
-        newSeconds = int(countTime % 60)
-
-        print(f"{newHour:02}:{newMinutes:02}:{newSeconds:02}")
-        T.sleep(1)
-
-    print("Times up!")
-
+        except ValueError:
+            print("")
+            print("You input the wrong data type. You are supposed to input an integer.")
+            print("")
+            
 if __name__ == "__main__":
     main()

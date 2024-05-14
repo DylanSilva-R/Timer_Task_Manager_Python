@@ -2,6 +2,7 @@ import sys
 import Tasks
 import Timer
 import threading
+from multiprocessing import Process
 import vlc
 
 """
@@ -13,7 +14,6 @@ file
 """
 taskObj = Tasks.TasksObj()
 timerObj = Timer.TimerObj()
-
 
 def main():
     print("------------------------")
@@ -96,8 +96,6 @@ def task_Manager_Input():
             print("Your input the wrong data type for the task manager input. Please try again.")
             print("---------------------------------------------------------------------------")
     
-
-
 def timer_Menu_Input():
     while True:    
         timer_Menu()
@@ -113,9 +111,11 @@ def timer_Menu_Input():
                     if timerObj.get_Time():
                         print("You haven't set a time limit yet. Please do that first.")
                     else:
-                        # Thread call is necessary so the timer can run in the background.
-                        timerThread = threading.Thread(target = timerObj.start_Timer(), daemon = False)
-                        timerThread.start()
+                        timerProcess = Process(target = timerObj.start_Timer())
+                        timerProcess.start()
+
+                        timerProcess.join()
+
                 case 3:
                     main()
                 case _:

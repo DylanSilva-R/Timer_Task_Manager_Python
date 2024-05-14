@@ -25,7 +25,30 @@ def main():
 
             match mainMenuIn:
                 case 1:
-                    task_Manager_Menu_Input()
+                        while True:  
+                            task_Manager_Menu()
+
+                            taskManagerInput = int(input("Your choice: "))
+
+                            match taskManagerInput:
+                                case 1:
+                                    taskDetails = input("Input your task: ")
+                                    taskObj.addToList(taskDetails)
+
+                                case 2:
+                                    if taskObj.getTaskCount() == 0:
+                                        print("There are no tasks to remove.")
+                                    else:
+                                        index = int(input("Input index of a task to remove: "))
+                                        taskObj.removeList(index)
+                                
+                                case 3:
+                                    taskObj.printList()
+
+                                case 4:
+                                    break
+                                case _:
+                                    print("Your input is out of bounds. Please try again.")
                 case 2:
                     timer_Menu_Input()
                 case 3:
@@ -58,38 +81,6 @@ def Main_menu():
     print("3) Exit")
 
 # Tasks task_Manager_Menu_Input handles user input for tasks management.
-def task_Manager_Menu_Input():
-    while True:  
-        task_Manager_Menu()
-
-        taskManagerInput = int(input("Your choice: "))
-
-        match taskManagerInput:
-            case 1:
-                taskDetails = input("Input your task: ")
-                taskObj.addToList(taskDetails)
-
-            case 2:
-                try:
-                    if taskObj.getTaskCount() == 0:
-                        print("There are no tasks to remove.")
-                    else:
-                        index = int(input("Input index of a task to remove: "))
-                        taskObj.removeList(index)
-
-                except ValueError:
-                    print("")
-                    print("You need to input an integer value")
-                    print("")
-                
-            case 3:
-                taskObj.printList()
-
-            case 4:
-                main()
-
-            case _:
-                print("Your input is out of bounds. Please try again.")
 
 def timer_Menu_Input():
     while True:

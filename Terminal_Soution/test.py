@@ -1,5 +1,7 @@
 import time as T
 import threading
+import Tasks
+import Timer
 
 """
 New concepts are being learned: Multiprocessing and multithreading.
@@ -11,6 +13,9 @@ CPU bound = Program/task spends most of its time waitting for internal events to
 IO bound = Program/task spends most of its time waiting for external evens use multithreading.
 """
 
+taskObj = Tasks.TasksObj()
+timerObj = Timer.TimerObj()
+
 def main():
     print("------------------------")
     print("|Timer and Task manager|")
@@ -19,48 +24,41 @@ def main():
 
     while True:
         try:
+            print("Main menu")
+            mainMenuInput = int(input("Your choice: "))
 
-            mainMenuIn = int(input("Your choice: "))
-
-            match mainMenuIn:
+            match mainMenuInput:
                 case 1:
-                    task_Manager_Menu_Input()
-                case 2:
-                    break
-                case _:
-                    print("Your input is out of bounds. Please try again.")
-                    
+                    while True:
+                        # Task input
+                        print("Task stuff")
+                        taskManagerInput = int(input("Your choice: "))
+
+                        match taskManagerInput:
+                            case 1:
+                                taskDetails = input("Input your task: ")
+                                taskObj.addToList(taskDetails)
+
+                            case 2:
+                                if taskObj.getTaskCount() == 0:
+                                    print("There are no tasks to remove.")
+                                else:
+                                    index = int(input("Input index of a task to remove: "))
+                                    taskObj.removeList(index)
+                            
+                            case 3:
+                                taskObj.printList()
+
+                            case 4:
+                                break
+                            case _:
+                                print("Your input is out of bounds. Please try again.")
+
         except ValueError:
-            print("")
-            print("You input the wrong data type. You are supposed to input an integer.")
-            print("")
+            print("------------------------------")
+            print("You input the wrong data type")
+            print("------------------------------")
 
-def task_Manager_Menu_Input():
-    while True: 
-
-        taskManagerInput = int(input("Your choice: "))
-
-        match taskManagerInput:
-            case 1:
-                taskDetails = input("Input your task: ")
-
-            case 2:
-                try:
-                    index = int(input("Input index of a task to remove: "))
-
-                except ValueError:
-                    print("")
-                    print("You need to input an integer value")
-                    print("")
-                
-            case 3:
-                print("Yo")
-
-            case 4:
-                main()
-
-            case _:
-                print("Your input is out of bounds. Please try again.")
 
 if __name__ == "__main__":
     main()

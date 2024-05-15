@@ -30,14 +30,8 @@ class TasksObj:
         for x in range(length):
             print(str(x) + ")" + self.taskList[x])
         print("")
-
-    def update_List_Data(self):
-        newCount = 0
-
-        for x in range(self.taskCount):
-            print()
-        return
     
     def get_Task_Count(self):
+        # Obtain task count
         return self.taskCount
     

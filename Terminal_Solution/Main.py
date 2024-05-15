@@ -7,9 +7,12 @@ import vlc
 """
 This is the main file of the timer/task manager program.
 This file will handle user input.
-Also need to figure out file handling in python.
-Audio playing: https://stackoverflow.com/questions/20021457/playing-mp3-song-on-python
-file 
+
+TODO:
+    - Need to figure out file handling in python.
+        -Audio playing: https://stackoverflow.com/questions/20021457/playing-mp3-song-on-python
+    - Figure out how to stop and continue time.
+    - Then I will be finally done. 
 """
 taskObj = Tasks.TasksObj()
 timerObj = Timer.TimerObj()
@@ -47,7 +50,9 @@ def task_Manager_Menu():
 def timer_Menu():
     print("1) Set time")
     print("2) Start timing")
-    #print("3) Set alarm sound")
+    #print("3) Stop time")
+    #print("4) Continue Time")
+    #print("5) Set alarm sound")
     print("3) Back")
 
 def Main_menu():
@@ -113,7 +118,7 @@ def timer_Menu_Input():
                         timerThread = threading.Thread(target=timerObj.start_Timer)
                         timerThread.start()
 
-
+                        timerThread.stop()
                 case 3:
                     main()
                 case _:

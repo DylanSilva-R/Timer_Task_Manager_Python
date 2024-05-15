@@ -33,5 +33,6 @@ class TimerObj:
 
             #print(f"{newHour:02}:{newMinutes:02}:{newSeconds:02}")
             T.sleep(1)
-
-        print("Times up!")
+        print("-----------")
+        print("|Times up!|")
+        print("-----------")

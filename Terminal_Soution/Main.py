@@ -2,7 +2,6 @@ import sys
 import Tasks
 import Timer
 import threading
-from multiprocessing import Process
 import vlc
 
 """
@@ -111,10 +110,9 @@ def timer_Menu_Input():
                     if timerObj.get_Time():
                         print("You haven't set a time limit yet. Please do that first.")
                     else:
-                        timerProcess = Process(target = timerObj.start_Timer())
-                        timerProcess.start()
+                        timerThread = threading.Thread(target=timerObj.start_Timer)
+                        timerThread.start()
 
-                        timerProcess.join()
 
                 case 3:
                     main()

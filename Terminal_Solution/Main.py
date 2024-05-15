@@ -122,6 +122,9 @@ def timer_Menu_Input():
             print("---------------------------------------------------------------------------")
             print("Your input the wrong data type for the timer menu input. Please try again.")
             print("---------------------------------------------------------------------------")
+
+def set_Alarm_Sound_Input():
+    return
        
 def check_If_Int(value):
     try:

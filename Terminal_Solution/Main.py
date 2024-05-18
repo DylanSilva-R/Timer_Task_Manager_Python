@@ -50,10 +50,10 @@ def task_Manager_Menu():
 def timer_Menu():
     print("1) Set time")
     print("2) Start timing")
-    #print("3) Stop time")
-    #print("4) Continue Time")
-    #print("5) Set alarm sound")
-    print("3) Back")
+    print("3) Stop time")
+    print("4) Continue Time")
+    print("5) Set alarm sound")
+    print("6) Back")
 
 def Main_menu():
     print("1) Task Manager")
@@ -103,24 +103,37 @@ def task_Manager_Input():
 def timer_Menu_Input():
     while True:    
         timer_Menu()
-
+        
         timerMenuIn = input("Your choice: ")
 
         if check_If_Int(timerMenuIn):
+            
             convertTimerMenuInput = convert_String_To_Int(timerMenuIn)
+
             match convertTimerMenuInput:
                 case 1:
                     timerObj.check_If_FormatCorrect()
                 case 2:
-                    if timerObj.get_Time():
+                    if timerObj.check_If_Elapsed_Time_Empty():
                         print("You haven't set a time limit yet. Please do that first.")
                     else:
-                        timerThread = threading.Thread(target=timerObj.start_Timer)
-                        timerThread.start()
+                        timerObj.start()
 
-                        timerThread.stop()
                 case 3:
-                    main()
+                    timerObj.stop()
+
+                case 4:
+                    timerObj.start()
+
+                case 5:
+                    print("Will add something here later.")
+
+                case 6:
+                    timerObj.reset()
+
+                case 7:
+                    break
+
                 case _:
                     print("Your input is out of bounds. Please try again.")
         else:

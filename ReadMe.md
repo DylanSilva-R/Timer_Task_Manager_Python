@@ -2,7 +2,7 @@
 
 ## Description
 - Motivation? I made this program because I wanted to create a minimallistic timer and task manager to keep track of my work flow.
-- Why? Ubuntu doesn't have a stopwatch+task manager so I decided to create my own.
+- Why?
 - What problem does it solve? It accurately keeps track of the users tasks and keeps track of time.
 - What did you learn?
 

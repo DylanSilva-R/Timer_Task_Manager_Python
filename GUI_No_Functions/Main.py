@@ -11,7 +11,6 @@ class App():
     def __init__(self, window):
         self.window.columnconfigure(0, weight = 1)
         self.window.rowconfigure(1, weght = 1)
-        self.window.
 
         self.createPrimaryLabels(window)
         self.createPrimaryButtons(window)

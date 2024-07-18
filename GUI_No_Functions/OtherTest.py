@@ -1,76 +1,66 @@
+"""
+Experimenting with grid layout.
+"""
 import tkinter as tk
 from tkinter import ttk
 
-class TaskManagerApp:
+
+import tkinter as tk
+from tkinter import ttk
+
+class NestedFramesApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Dynamic Task Manager")
+        self.root.geometry("600x600")
+        self.root.title("Nested Frames Example")
+
+        # Create a style object
+        style = ttk.Style()
         
-        self.tasks = []
-        
-        self.main_frame = tk.Frame(root)
-        self.main_frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        # Configure styles for frames using hexadecimal color values
+        style.configure("Outer.TFrame", background="#ADD8E6")  # Light blue
+        style.configure("Inner.TFrame", background="#90EE90")  # Light green
 
-        self.add_task_btn = tk.Button(self.main_frame, text="Add Task", command=self.add_task)
-        self.add_task_btn.pack(pady=10)
+        # Outer frame
+        self.outer_frame = ttk.Frame(root, style="Outer.TFrame", width=250, height=300, padding="20 20 20 20")
+        self.outer_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Create a canvas for the task container
-        self.canvas = tk.Canvas(self.main_frame)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # Inner frame
+        self.inner_frame = ttk.Frame(self.outer_frame, style="Inner.TFrame", width=200, height=150, padding="10 10 10 10", borderwidth=2, relief="sunken")
+        self.inner_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Add a scrollbar to the canvas
-        self.scrollbar = ttk.Scrollbar(self.main_frame, orient="vertical", command=self.canvas.yview)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # Add a label to the inner frame
+        self.label = ttk.Label(self.inner_frame, text="This is an inner frame", background="#90EE90")
+        self.label.pack(pady=20)
 
-        # Configure the canvas to work with the scrollbar
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.bind('<Configure>', self.on_canvas_configure)
-
-        # Create a frame inside the canvas
-        self.task_container = tk.Frame(self.canvas)
-
-        # Add the frame to the canvas
-        self.canvas.create_window((0, 0), window=self.task_container, anchor="nw")
-
-        self.save_tasks_btn = tk.Button(self.main_frame, text="Save Tasks", command=self.save_tasks)
-        self.save_tasks_btn.pack(pady=10)
-
-    def on_canvas_configure(self, event=None):
-        # Update the scroll region to encompass the inner frame
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        
-    def add_task(self):
-        task_frame = tk.Frame(self.task_container)
-        task_frame.pack(pady=5, fill=tk.X)
-
-        task_label = tk.Label(task_frame, text=f"Task {len(self.tasks) + 1}:")
-        task_label.pack(side=tk.LEFT)
-
-        task_entry = tk.Entry(task_frame)
-        task_entry.pack(side=tk.LEFT, padx=10, fill=tk.X, expand=True)
-
-        remove_btn = tk.Button(task_frame, text="Remove", command=lambda: self.remove_task(task_frame))
-        remove_btn.pack(side=tk.LEFT)
-
-        self.tasks.append(task_entry)
-        self.on_canvas_configure()  # Update scroll region whenever a new task is added
-
-    def remove_task(self, task_frame):
-        task_frame.destroy()
-        self.tasks = [task for task in self.tasks if task.master != task_frame]
-        self.update_task_labels()
-        self.on_canvas_configure()  # Update scroll region whenever a task is removed
-
-    def update_task_labels(self):
-        for i, task in enumerate(self.tasks):
-            task.master.winfo_children()[0].config(text=f"Task {i + 1}:")
-
-    def save_tasks(self):
-        task_list = [task.get() for task in self.tasks if task.get().strip() != ""]
-        print("Tasks:", task_list)
-        # Here you can save the task_list to a file or process it as needed
+        # Add a button to the inner frame
+        self.button = ttk.Button(self.inner_frame, text="Click Me")
+        self.button.pack(pady=10)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = TaskManagerApp(root)
+    app = NestedFramesApp(root)
     root.mainloop()
+
+
+
+"""
+if __name__ == "__main__":
+    window = tk.Tk()
+    window.geometry("600x600")
+
+    # ttk doesn't support background colors as a parameter.
+    style = ttk.Style()
+
+    style.configure("outer.TFrame", background = "#8B8B8B")
+    style.configure("inner.TFrame", background = "#D9D9D9")
+
+    #Tasks frame
+    taskOuterFrame = ttk.Frame(window, style = "outer.TFrame", width =250, height = 250)
+    taskOuterFrame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    taskInnerFrame = ttk.Frame(taskOuterFrame, style = "inner.TFrame", width = 150, height = 150)
+    taskInnerFrame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    window.mainloop()
+"""

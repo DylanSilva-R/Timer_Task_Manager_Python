@@ -1,10 +1,13 @@
 """
-TODO: Configure the ctrl+a shortcut.
+TODO: User should at least two zero values.
 TODO: Stopwatch needs to start doing stopwatch things.
+TODO: Optimize GUI
 """
 
 import customtkinter
 from CTkMessagebox import CTkMessagebox #Error wth message box: https://stackoverflow.com/questions/48317606/importerror-cannot-import-name-imagetk
+from CustomException import CustomException
+from Timer import TimerObj
 
 customtkinter.set_default_color_theme("dark-blue")
 customtkinter.set_appearance_mode("dark")
@@ -60,26 +63,36 @@ class LeftFrame(customtkinter.CTkFrame):
         self.taskList.append(taskFrame)
 
     def selectAll(self, event):
-        self.taskEntry.select_range(0, 'end')
+        widget = event.widget
+        widget.select_range(0, 'end')
         return 'break'
     
     def deleteSelected(self, event):
-        if self.taskEntry.select_present():
-            self.taskEntry.delete(0, 'end')
+        # Get the current selection in the entry widget that triggered the event
+        widget = event.widget
+        if widget.selection_present():
+            widget.delete(0, 'end')
+        # Return 'break' to stop the default behavior
         return 'break'
 
     def removeTask(self, taskFrame):
-        if taskFrame in self.taskList:
-            self.taskList.remove(taskFrame)
-            taskFrame.destroy()
-        else:
-            print("Task not found in the list.")
-    
+        try:
+            if taskFrame in self.taskList:
+                self.taskList.remove(taskFrame)
+                taskFrame.destroy()
+            else:
+                raise CustomException("Task not found in the list.")
+        except CustomException as ex:
+            CTkMessagebox(title = "error", message = ex.message)
 
 class RightFrame(customtkinter.CTkFrame):
+
+    saveHour = 0
+    saveMinutes = 0
+    saveSeconds = 0
+
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        
         self.createGridSystem()
         stopwatchLabel = customtkinter.CTkLabel(self, justify = "center",text = "Stopwatch", font = ("inter", 25))
         stopwatchLabel.grid(row = 0, column = 0, columnspan = 5, sticky = "nsew")
@@ -114,16 +127,36 @@ class RightFrame(customtkinter.CTkFrame):
 
         self.hourEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "h", placeholder_text_color="white", justify = "center")
         self.hourEntry.grid(row = 1, column = 1, padx = 10, pady = 10, sticky = "nsew")
+        self.hourEntry.bind("<Control-a>", self.selectAll)
+        self.hourEntry.bind("<Control-A>", self.selectAll)
+        self.hourEntry.bind("<Delete>", self.deleteSelected)
         colonOne = customtkinter.CTkLabel(self.stopwatchFrame, text=":", text_color = "black")
         colonOne.grid(row = 1, column = 2, sticky = "nsew")
         
         self.minutesEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "min", placeholder_text_color="white", justify = "center")
         self.minutesEntry.grid(row = 1, column = 3, padx = 10, pady = 10, sticky = "nsew")
+        self.minutesEntry.bind("<Control-a>", self.selectAll)
+        self.minutesEntry.bind("<Control-A>", self.selectAll)
+        self.minutesEntry.bind("<Delete>", self.deleteSelected)
         colonTwo = customtkinter.CTkLabel(self.stopwatchFrame, text=":", text_color = "black")
         colonTwo.grid(row = 1, column = 4, sticky = "nsew")
         
         self.secondsEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "s",  placeholder_text_color="white", justify = "center")
+        self.secondsEntry.bind("<Control-a>", self.selectAll)
+        self.secondsEntry.bind("<Control-A>", self.selectAll)
+        self.secondsEntry.bind("<Delete>", self.deleteSelected)
         self.secondsEntry.grid(row = 1, column = 5, padx = 10, pady = 10, sticky = "nsew")
+
+    def selectAll(self, event):
+        widget = event.widget
+        widget.select_range(0, 'end')
+        return 'break'
+
+    def deleteSelected(self, event):
+        widget = event.widget
+        if widget.selection_present():
+            widget.delete(0, 'end')
+        return 'break'
 
     def createButtons(self):
         self.startBtn = customtkinter.CTkButton(self.innerFrame, text = "Start", text_color = "white", fg_color = "#8B8B8B", command = self.checkIfInputIsCorrect)
@@ -132,50 +165,73 @@ class RightFrame(customtkinter.CTkFrame):
         self.stopBtn = customtkinter.CTkButton(self.innerFrame, text = "Stop", text_color = "white", fg_color = "#8B8B8B")
         self.stopBtn.grid(row = 2, column = 3, padx = 10, pady = 10)
 
-        self.resetBtn = customtkinter.CTkButton(self.innerFrame, text = "Reset", text_color = "white", fg_color = "#8B8B8B")
+        self.resetBtn = customtkinter.CTkButton(self.innerFrame, text = "Reset", text_color = "white", fg_color = "#8B8B8B", command = self.resetStopWatch)
         self.resetBtn.grid(row = 3, column = 2, padx = 10, pady = 10)
 
+    def resetStopWatch(self):
+        #This function needs to retrieve the original values that the user input.
+        self.hourEntry.insert(0, int(self.saveHour))
+        self.minutesEntry.insert(0, int(self.saveMinutes))
+        self.secondsEntry.insert(0, int(self.saveSeconds))
+
     def checkIfInputIsCorrect(self):
+        # When all errors are checked, start the stopwatchs.
         try:
             hours = int(self.hourEntry.get())            
             minutes = int(self.minutesEntry.get())
-            seconds = int(self.minutesEntry.get())
+            seconds = int(self.secondsEntry.get())
+            countZeros = 0
 
             if (hours < 0) or (minutes < 0) or (seconds < 0):
-                raise customException("One of your values is a negative value.") 
+                raise CustomException("One of your values is a negative value.") 
             elif (hours > 99) or (minutes > 99) or (seconds > 99):
-                raise customException("One of your values if greater than 99")
+                raise CustomException("One of your values if greater than 99")
             
-        except customException as ex:
+            if hours == 0:
+                countZeros += 1
+            if minutes == 0:
+                countZeros += 1
+            if seconds == 0:
+                countZeros += 1
+            
+            if countZeros == 3:
+                raise CustomException("You inputted all zeros.")
+
+            self.saveHour = hours
+            self.saveMinutes = minutes
+            self.saveSeconds = seconds
+
+            self.startStopwWatch()
+        except CustomException as ex:
             CTkMessagebox(title = "Error", message = ex.message)
-        except (TypeError, ValueError):
+        except (ValueError):
             CTkMessagebox(title = "Error", message = "You input the wrong data type. Please enter integers.")
+    
+    def startStopwWatch(self):
+        TimerObj.set_Time(self.saveHour, self.saveMinutes, self.saveSeconds)
+        TimerObj.start(self)
 
-
-class customException(Exception):
-    def __init__(self, message):
-        self.message = message
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__() # super() lets you call methods in the super class from a subclass.
         
         self.title("Task manager and stopwatch")
-        self.geometry("500x500")
-        self.createMainGridSystem()
-        self.createLeftFrame()
-        self.createRightFrame()
+        self.geometry("1000x500")
+        self.create_Main_GridSystem()
+        self.create_Left_Frame()
+        self.create_Right_Frame()
 
-    def createMainGridSystem(self):
+    def create_Main_GridSystem(self):
         self.grid_rowconfigure((0, 1, 2, 3), weight = 1)
 
         self.grid_columnconfigure((0, 1, 2, 3), weight = 1)
     
-    def createLeftFrame(self):
+    def create_Left_Frame(self):
         self.leftFrame = LeftFrame(self, fg_color = "#8B8B8B")
         self.leftFrame.grid(row = 1, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = "nsew")
     
-    def createRightFrame(self):
+    def create_Right_Frame(self):
         self.rightFrame = RightFrame(self, fg_color = "#8B8B8B")
         self.rightFrame.grid(row = 1, column = 2, padx = 10, pady = 10, sticky = "nsew")
 

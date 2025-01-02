@@ -66,9 +66,9 @@ class TimerObj:
             if self.thread is not None:
                 self.thread.join()
 
-            secondsToHours = int(self.timeLimit / 3600)
-            secondsToMinutes = int(((self.timeLimit/3600) % 1) * 60)
-            seconds = int(((((self.timeLimit/3600) % 1) * 60) % 1) * 60)
+            secondsToHours = int(self.elapsedTime / 3600)
+            secondsToMinutes = int(((self.elapsedTime/3600) % 1) * 60)
+            seconds = int(((((self.elapsedTime/3600) % 1) * 60) % 1) * 60)
 
             print(f"Stopped at {secondsToHours:02}:{secondsToMinutes:02}:{seconds:02} seconds")
 

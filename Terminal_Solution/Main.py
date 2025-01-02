@@ -2,7 +2,7 @@ import sys
 import Tasks
 import Timer
 import threading
-import vlc
+#import vlc
 
 """
 This is the main file of the timer/task manager program.

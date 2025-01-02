@@ -1,10 +1,11 @@
 """
-TODO: User should at least two zero values.
-TODO: Stopwatch needs to start doing stopwatch things.
+TODO: Add settings button
 TODO: Optimize GUI
 """
 
 import customtkinter
+import time
+import threading
 from CTkMessagebox import CTkMessagebox #Error wth message box: https://stackoverflow.com/questions/48317606/importerror-cannot-import-name-imagetk
 from CustomException import CustomException
 from Timer import TimerObj
@@ -26,7 +27,10 @@ class LeftFrame(customtkinter.CTkFrame):
         self.createGridSystemInnerFrame()
         self.createScrollableFrame()
         addTaskBtn = customtkinter.CTkButton(self.innerFrame, text = "Add Task", text_color = "white", anchor = "center",fg_color = "#8B8B8B", command =self.addTask)
-        addTaskBtn.grid(row = 2, column = 1)
+        addTaskBtn.grid(row = 2, column = 1, padx = 10, pady = 10)
+
+        removeAllTaskBtn = customtkinter.CTkButton(self.innerFrame, text = "Remove All", text_color = "white", anchor = "center",fg_color = "#8B8B8B", command =self.deleteAll)
+        removeAllTaskBtn.grid(row = 3, column = 1, padx = 10, pady = 10)       
 
     def createGridSystem(self):
         self.grid_columnconfigure((0, 1, 2, 3, 4), weight = 1)
@@ -62,6 +66,12 @@ class LeftFrame(customtkinter.CTkFrame):
 
         self.taskList.append(taskFrame)
 
+    def deleteAll(self):
+        # This function deletes all tasks within the task frame.
+        for i in self.taskList:
+            i.destroy()
+        self.taskList.clear()
+
     def selectAll(self, event):
         widget = event.widget
         widget.select_range(0, 'end')
@@ -76,6 +86,7 @@ class LeftFrame(customtkinter.CTkFrame):
         return 'break'
 
     def removeTask(self, taskFrame):
+        # This function removes a task depending on user selection.
         try:
             if taskFrame in self.taskList:
                 self.taskList.remove(taskFrame)
@@ -93,6 +104,12 @@ class RightFrame(customtkinter.CTkFrame):
 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        
+        self.running = False
+        self.thread = None
+        self.elapsedTime = 0
+        self.timeLimit = 0
+
         self.createGridSystem()
         stopwatchLabel = customtkinter.CTkLabel(self, justify = "center",text = "Stopwatch", font = ("inter", 25))
         stopwatchLabel.grid(row = 0, column = 0, columnspan = 5, sticky = "nsew")
@@ -111,8 +128,7 @@ class RightFrame(customtkinter.CTkFrame):
 
     def createGridSystemsStopwatchFrame(self):
         self.stopwatchFrame.grid_columnconfigure((0, 1, 2), weight = 1)
-        self.stopwatchFrame.grid_rowconfigure((0, 2, 4, 6), weight = 1)
-        self.stopwatchFrame.grid_rowconfigure((1, 3, 5), weight = 2)
+        self.stopwatchFrame.grid_rowconfigure((0, 1, 2), weight = 1)
 
     def createInnerFrame(self):
         self.innerFrame = customtkinter.CTkFrame(self, fg_color = "#D9D9D9")
@@ -120,97 +136,120 @@ class RightFrame(customtkinter.CTkFrame):
         self.createGridSystemInnerFrame()
     
     def createStopwatchFrame(self):
+        # Recreate the stopwatch entry. Needs to be single input field that automatically inputs colons for the user.
+
         self.stopwatchFrame = customtkinter.CTkFrame(self.innerFrame, fg_color = "#8B8B8B")
         self.stopwatchFrame.grid(row = 1, column = 0, columnspan = 4, padx = 10, pady = 10, sticky = "nsew")
         
         self.createGridSystemsStopwatchFrame()
 
-        self.hourEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "h", placeholder_text_color="white", justify = "center")
-        self.hourEntry.grid(row = 1, column = 1, padx = 10, pady = 10, sticky = "nsew")
-        self.hourEntry.bind("<Control-a>", self.selectAll)
-        self.hourEntry.bind("<Control-A>", self.selectAll)
-        self.hourEntry.bind("<Delete>", self.deleteSelected)
-        colonOne = customtkinter.CTkLabel(self.stopwatchFrame, text=":", text_color = "black")
-        colonOne.grid(row = 1, column = 2, sticky = "nsew")
-        
-        self.minutesEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "min", placeholder_text_color="white", justify = "center")
-        self.minutesEntry.grid(row = 1, column = 3, padx = 10, pady = 10, sticky = "nsew")
-        self.minutesEntry.bind("<Control-a>", self.selectAll)
-        self.minutesEntry.bind("<Control-A>", self.selectAll)
-        self.minutesEntry.bind("<Delete>", self.deleteSelected)
-        colonTwo = customtkinter.CTkLabel(self.stopwatchFrame, text=":", text_color = "black")
-        colonTwo.grid(row = 1, column = 4, sticky = "nsew")
-        
-        self.secondsEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "s",  placeholder_text_color="white", justify = "center")
-        self.secondsEntry.bind("<Control-a>", self.selectAll)
-        self.secondsEntry.bind("<Control-A>", self.selectAll)
-        self.secondsEntry.bind("<Delete>", self.deleteSelected)
-        self.secondsEntry.grid(row = 1, column = 5, padx = 10, pady = 10, sticky = "nsew")
+        self.timeEntry = customtkinter.CTkEntry(self.stopwatchFrame, placeholder_text = "HH:MM:SS", justify = "center", placeholder_text_color="white")
+        self.timeEntry.grid(row =1 , column = 1, padx = 10, pady = 10, sticky = "nsew")
+        self.timeEntry.bind("<KeyRelease>", self.formatTime)
 
-    def selectAll(self, event):
-        widget = event.widget
-        widget.select_range(0, 'end')
-        return 'break'
+    def formatTime(self, event = None):
+        content = self.timeEntry.get()
 
-    def deleteSelected(self, event):
-        widget = event.widget
-        if widget.selection_present():
-            widget.delete(0, 'end')
-        return 'break'
+        filteredContent = "".join([ch for ch in content if ch.isdigit()])
+
+        # Add colons dynamically
+        if len(filteredContent) > 2:
+            filteredContent = filteredContent[:2] + ":" + filteredContent[2:]
+        if len(filteredContent) > 5:
+            filteredContent = filteredContent[:5] + ":" + filteredContent[5:]
+        if len(filteredContent) >= 8:
+            filteredContent = filteredContent[:8]  # Limit to hh:mm:ss
+        if len(filteredContent) == 8:
+            hours, minutes, seconds = map(int, filteredContent.split(":"))
+
+            self.saveHour = hours
+            self.saveMinutes = minutes
+            self.saveSeconds = seconds
+
+            hoursToSeconds = hours * 3600
+            minutesToSeconds = minutes * 60
+
+            self.timeLimit = hoursToSeconds + minutesToSeconds + seconds
+
+            print("Time limit in seconds: " + str(self.timeLimit))
+
+
+        # Update the entry field and display label
+        self.timeEntry.delete(0, customtkinter.END)
+        self.timeEntry.insert(0, filteredContent)
 
     def createButtons(self):
-        self.startBtn = customtkinter.CTkButton(self.innerFrame, text = "Start", text_color = "white", fg_color = "#8B8B8B", command = self.checkIfInputIsCorrect)
+        self.startBtn = customtkinter.CTkButton(self.innerFrame, text = "Start", text_color = "white", fg_color = "#8B8B8B", command = self.start)
         self.startBtn.grid(row = 2, column = 1, padx = 10, pady = 10)
 
-        self.stopBtn = customtkinter.CTkButton(self.innerFrame, text = "Stop", text_color = "white", fg_color = "#8B8B8B")
+        self.stopBtn = customtkinter.CTkButton(self.innerFrame, text = "Stop", text_color = "white", fg_color = "#8B8B8B", command = self.stop_Time)
         self.stopBtn.grid(row = 2, column = 3, padx = 10, pady = 10)
 
         self.resetBtn = customtkinter.CTkButton(self.innerFrame, text = "Reset", text_color = "white", fg_color = "#8B8B8B", command = self.resetStopWatch)
         self.resetBtn.grid(row = 3, column = 2, padx = 10, pady = 10)
 
     def resetStopWatch(self):
-        #This function needs to retrieve the original values that the user input.
-        self.hourEntry.insert(0, int(self.saveHour))
-        self.minutesEntry.insert(0, int(self.saveMinutes))
-        self.secondsEntry.insert(0, int(self.saveSeconds))
+        # This function kills thread and resets time.
+        #This function needs to delete all data within the entry points and use the original values that the user input.
+        self.stop_Time()
+       
+        self.timeEntry.delete(0, 'end')
+        
+        originalTime = str(self.saveHour) + ":" + str(self.saveMinutes) + ":" + str(self.saveSeconds)
 
-    def checkIfInputIsCorrect(self):
-        # When all errors are checked, start the stopwatchs.
-        try:
-            hours = int(self.hourEntry.get())            
-            minutes = int(self.minutesEntry.get())
-            seconds = int(self.secondsEntry.get())
-            countZeros = 0
+        self.timeEntry.insert(0, originalTime)
 
-            if (hours < 0) or (minutes < 0) or (seconds < 0):
-                raise CustomException("One of your values is a negative value.") 
-            elif (hours > 99) or (minutes > 99) or (seconds > 99):
-                raise CustomException("One of your values if greater than 99")
-            
-            if hours == 0:
-                countZeros += 1
-            if minutes == 0:
-                countZeros += 1
-            if seconds == 0:
-                countZeros += 1
-            
-            if countZeros == 3:
-                raise CustomException("You inputted all zeros.")
+    def start(self):
+        if not self.running:
+            self.running = True
+            self.thread = threading.Thread(target=self.startStopwWatch)
+            self.thread.start()
 
-            self.saveHour = hours
-            self.saveMinutes = minutes
-            self.saveSeconds = seconds
-
-            self.startStopwWatch()
-        except CustomException as ex:
-            CTkMessagebox(title = "Error", message = ex.message)
-        except (ValueError):
-            CTkMessagebox(title = "Error", message = "You input the wrong data type. Please enter integers.")
-    
     def startStopwWatch(self):
-        TimerObj.set_Time(self.saveHour, self.saveMinutes, self.saveSeconds)
-        TimerObj.start(self)
+        # Might have to cope and create a thread here, instead of using the TimerObj.
+        startTime = time.time()
+        while self.running and self.elapsedTime < self.timeLimit:
+            currentTime = time.time()
+            self.elapsedTime += currentTime - startTime
+            startTime = currentTime
+            if self.elapsedTime >= self.timeLimit:
+                self.elapsedTime = self.timeLimit
+                self.running = False
 
+                CTkMessagebox(title = "Alert", message = "Times Up!")
+                
+                break
+            print(f"Elapsed time: {self.timeLimit - self.elapsedTime:.2f} s")
+            self.updateTime()
+            time.sleep(1)
+    
+    def updateTime(self):
+        print("Update time")
+
+        leftTime = self.timeLimit - self.elapsedTime
+
+        secondsToHours = int(leftTime / 3600)
+        secondsToMinutes = int(((leftTime/3600) % 1) * 60)
+        seconds = int(((((leftTime/3600) % 1) * 60) % 1) * 60)
+
+        self.timeEntry.delete(0, 'end')
+        
+        originalTime = str(secondsToHours) + ":" + str(secondsToMinutes) + ":" + str(seconds)
+
+        self.timeEntry.insert(0, originalTime)
+
+    def stop_Time(self):
+        
+        if self.running:
+            self.running = False
+            if self.thread is not None:
+                self.thread.join()
+
+            secondsToHours = int(self.elapsedTime / 3600)
+            secondsToMinutes = int(((self.elapsedTime/3600) % 1) * 60)
+            seconds = int(((((self.elapsedTime/3600) % 1) * 60) % 1) * 60)
+
+            print(f"Stopped at {secondsToHours:02}:{secondsToMinutes:02}:{seconds:02} seconds")
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -223,17 +262,20 @@ class App(customtkinter.CTk):
         self.create_Right_Frame()
 
     def create_Main_GridSystem(self):
-        self.grid_rowconfigure((0, 1, 2, 3), weight = 1)
+        self.grid_rowconfigure((0, 1, 2, 3, 4), weight = 1)
 
-        self.grid_columnconfigure((0, 1, 2, 3), weight = 1)
+        self.grid_columnconfigure((0, 1, 2, 3, 4), weight = 1)
     
+    def create_Settings_Button(self):
+        print("Settings button")
+
     def create_Left_Frame(self):
         self.leftFrame = LeftFrame(self, fg_color = "#8B8B8B")
-        self.leftFrame.grid(row = 1, column = 0, columnspan = 2, padx = 10, pady = 10, sticky = "nsew")
+        self.leftFrame.grid(row = 1, column = 0, columnspan = 3, padx = 10, pady = 10, sticky = "nsew")
     
     def create_Right_Frame(self):
         self.rightFrame = RightFrame(self, fg_color = "#8B8B8B")
-        self.rightFrame.grid(row = 1, column = 2, padx = 10, pady = 10, sticky = "nsew")
+        self.rightFrame.grid(row = 1, column = 3, columnspan = 3, padx = 10, pady = 10, sticky = "nsew")
 
 app = App()
 app.resizable(width = True, height = True)

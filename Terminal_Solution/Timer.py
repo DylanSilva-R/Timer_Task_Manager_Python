@@ -30,6 +30,12 @@ class TimerObj:
                 elif yOrNo != "N" or yOrNo != "n":
                     print("Your input is incorrect.")
             break
+    
+    def set_Time(self, hours, minutes, seconds):
+        hoursToSeconds = hours * 3600
+        minutesToSeconds = minutes * 60
+
+        self.timeLimit = hoursToSeconds + minutesToSeconds + seconds
 
     def start(self):
         if not self.running:
@@ -51,7 +57,7 @@ class TimerObj:
                 print("__________")
                 
                 break
-            #print(f"Elapsed time: {self.elapsedTime:.2f} seconds")
+            print(f"Elapsed time: {self.elapsedTime:.2f} seconds")
             time.sleep(1)
 
     def stop(self):
@@ -60,9 +66,9 @@ class TimerObj:
             if self.thread is not None:
                 self.thread.join()
 
-            secondsToHours = int(self.timeLimit / 3600)
-            secondsToMinutes = int(((self.timeLimit/3600) % 1) * 60)
-            seconds = int(((((self.timeLimit/3600) % 1) * 60) % 1) * 60)
+            secondsToHours = int(self.elapsedTime / 3600)
+            secondsToMinutes = int(((self.elapsedTime/3600) % 1) * 60)
+            seconds = int(((((self.elapsedTime/3600) % 1) * 60) % 1) * 60)
 
             print(f"Stopped at {secondsToHours:02}:{secondsToMinutes:02}:{seconds:02} seconds")
 
